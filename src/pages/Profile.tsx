@@ -288,8 +288,14 @@ const Profile = () => {
                 )}
               </div>
             </div>
-            {isOwnProfile && (
+            {isOwnProfile && !(profile?.role === 'official' || profile?.role === 'admin' || profile?.email === 'work.aditipatwa@gmail.com') && (
               <div className="flex gap-4 mb-4">
+                <button 
+                  onClick={() => setCurrentView('wallet')}
+                  className="bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border border-emerald-100 px-6 py-2 rounded-xl font-bold flex items-center gap-2 transition-colors shadow-sm"
+                >
+                  <Wallet className="w-5 h-5" /> Wallet
+                </button>
               </div>
             )}
           </div>

@@ -59,16 +59,6 @@ const DashboardContent = () => {
           return <Events />;
         case 'profile':
           return <Profile />;
-        case 'submit_restoration':
-          return <SubmitRestoration />;
-        case 'wallet':
-          return <WithdrawalPage />;
-        case 'dashboard':
-          return <Dashboard />;
-        case 'map':
-          return <RestorationMap />;
-        case 'impact_showcase':
-          return <AppreciationWall />;
         default:
           return <AdminPanel mode="pending" />;
       }

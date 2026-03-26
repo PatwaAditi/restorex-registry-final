@@ -38,6 +38,13 @@ export const NavigationProvider = ({ children, initialView }: { children: ReactN
       return;
     }
 
+    // Officials cannot access user-only views
+    const userOnlyViews: ViewType[] = ['impact_showcase', 'submit_restoration', 'wallet'];
+    if (isOfficial && userOnlyViews.includes(view)) {
+      // Prevent access or redirect to dashboard
+      return;
+    }
+
     setCurrentView(view);
   };
 

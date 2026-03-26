@@ -417,6 +417,14 @@ const AdminPanel = ({ mode = 'pending' }: { mode?: 'pending' | 'verified' }) => 
 
                 {selectedSub.status === 'pending' && (
                   <div className="space-y-6 pt-6 border-t border-slate-100">
+                    <div>
+                      <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Credits to be Awarded</p>
+                      <div className="flex items-center gap-3">
+                        <Trophy className="text-amber-500 w-5 h-5" />
+                        <span className="font-bold text-slate-900 text-xl">{CREDIT_VALUES[selectedSub.type]} CBC</span>
+                      </div>
+                    </div>
+
                     <div className="space-y-3">
                       <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Rejection Reason (Required for Reject)</p>
                       <textarea

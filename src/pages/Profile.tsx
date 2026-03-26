@@ -120,22 +120,27 @@ const Profile = () => {
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      let subs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Submission));
-      
-      // Seed with 3 restorations only for regular users if empty
-      const isProfileOfficial = profile.role === 'official' || profile.role === 'admin' ;
-      if (subs.length === 0 && !isProfileOfficial) {
-        subs = [
-          { id: 'm1', type: 'mangrove', creditsAssigned: 500, description: 'Mangrove Planting at Sundarbans Delta', status: 'approved', blockchainVerified: true, createdAt: new Date().toISOString(), imageUrl: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&q=80&w=1000' },
-          { id: 'm2', type: 'seagrass', creditsAssigned: 510, description: 'Seagrass bed restoration in Gulf of Mannar', status: 'approved', blockchainVerified: true, createdAt: new Date(Date.now() - 86400000).toISOString(), imageUrl: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&q=80&w=1000' },
-          { id: 'm3', type: 'wetland', creditsAssigned: 390, description: 'Eco-restoration of coastal wetlands', status: 'approved', blockchainVerified: true, createdAt: new Date(Date.now() - 172800000).toISOString(), imageUrl: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&q=80&w=1000' }
-        ] as any[];
-      }
-      
+      const subs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Submission));
       setSubmissions(subs);
       setLoading(false);
 
-      // NO REPAIR SCRIPT NEEDED NOW
+      // TEMPORARY SCRIPT TO FIX MISSING IMAGES
+      const fixMangroveImages = async () => {
+        if (subs && subs.length > 0) {
+          for (const sub of subs) {
+            if (sub.type.toLowerCase().includes('mangrove') && !sub.imageUrl.includes('encrypted-tbn0.gstatic')) {
+              try {
+                await updateDoc(doc(db, 'submissions', sub.id), {
+                  imageUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRUVQaI4jOWlWfNu26rrV1-mKVImXrP9AaMBg&s'
+                });
+              } catch (err) {
+                console.error("Failed to repair image:", err);
+              }
+            }
+          }
+        }
+      };
+      fixMangroveImages();
     }, (error) => {
       console.error("Error fetching submissions:", error);
       setLoading(false);
@@ -205,8 +210,11 @@ const Profile = () => {
   };
 
   const handleCreatePost = () => {
-    // Force set the view for both users and officials
-    setCurrentView('submit_restoration');
+    if (currentUserProfile?.role === 'guest') {
+      setShowLoginPopup(true);
+    } else {
+      setCurrentView('submit_restoration');
+    }
   };
 
   if (loading && !profile) {
@@ -217,8 +225,6 @@ const Profile = () => {
     );
   }
 
-  const isViewingOfficial = profile?.role === 'official' || profile?.role === 'admin' || profile?.email === 'work.aditipatwa@gmail.com';
-  
   if (!profile) {
     return (
       <div className="max-w-5xl mx-auto py-20 text-center">
@@ -282,23 +288,19 @@ const Profile = () => {
                 )}
               </div>
             </div>
-            {isOwnProfile && !isViewingOfficial && (
+            {isOwnProfile && (
               <div className="flex gap-4 mb-4">
-                <button 
-                  onClick={() => setCurrentView('wallet')}
-                  className="bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border border-emerald-100 px-6 py-2 rounded-xl font-bold flex items-center gap-2 transition-colors shadow-sm"
-                >
-                  <Wallet className="w-5 h-5" /> Wallet
-                </button>
               </div>
             )}
           </div>
 
           <div className={cn("grid gap-6 pt-8 border-t border-slate-200/50", 
-            isViewingOfficial ? "grid-cols-2 md:grid-cols-3" : "grid-cols-2 md:grid-cols-4")}>
+            (profile?.role === 'official' || profile?.role === 'admin' || profile?.email === 'work.aditipatwa@gmail.com') ? "grid-cols-2 md:grid-cols-3" : "grid-cols-2 md:grid-cols-4")}>
             {[
-              ...(!isViewingOfficial ? [{ label: 'Carbon Credits', value: 1400, icon: Trophy, color: 'text-amber-500' }] : []),
-              { label: 'Verified Projects', value: (!isViewingOfficial ? 3 : (submissions.filter(s => s.status === 'approved').length || 0)), icon: Leaf, color: 'text-emerald-500' },
+              ...(!(profile?.role === 'official' || profile?.role === 'admin' || profile?.email === 'work.aditipatwa@gmail.com') 
+                ? [{ label: 'Carbon Credits', value: 1400, icon: Trophy, color: 'text-amber-500' }] 
+                : []),
+              { label: 'Verified Projects', value: (!(profile?.role === 'official' || profile?.role === 'admin' || profile?.email === 'work.aditipatwa@gmail.com') ? 3 : (submissions.filter(s => s.status === 'approved').length || 0)), icon: Leaf, color: 'text-emerald-500' },
               { label: 'Registry Users', value: globalStats.users, icon: User, color: 'text-blue-500' },
               { label: 'Events Hosted', value: globalStats.events, icon: Calendar, color: 'text-purple-500' },
             ].map((stat, i) => (
@@ -435,7 +437,7 @@ const Profile = () => {
       </div>
 
       {/* Floating Action Button */}
-      {isOwnProfile && profile.role !== 'official' && profile.role !== 'admin' && (
+      {isOwnProfile && (
         <button 
           onClick={handleCreatePost}
           className="fixed bottom-8 right-8 w-16 h-16 glass-button-blue rounded-full shadow-2xl flex items-center justify-center hover:scale-105 active:scale-95 z-40"

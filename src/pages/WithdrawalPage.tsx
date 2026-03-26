@@ -66,19 +66,17 @@ const WithdrawalPage = () => {
     }
   };
 
-  const isOfficial = profile?.role === 'official' || profile?.role === 'admin' || profile?.email === 'work.aditipatwa@gmail.com';
   const handleRequestWithdrawal = async () => {
-    const currentCredits = !isOfficial ? 1400 : (profile?.totalCredits || 0);
-    if (!profile || currentCredits < MIN_WITHDRAWAL || !profile.bankDetails) return;
+    if (!profile || profile.totalCredits < MIN_WITHDRAWAL || !profile.bankDetails) return;
 
     setIsRequesting(true);
     try {
-      const amountINR = Math.floor(currentCredits / CONVERSION_RATE);
+      const amountINR = Math.floor(profile.totalCredits / CONVERSION_RATE);
       
       await addDoc(collection(db, 'withdrawals'), {
         userId: profile.uid,
         userName: profile.displayName,
-        creditsRequested: currentCredits,
+        creditsRequested: profile.totalCredits,
         amountINR,
         status: 'pending',
         bankDetails: profile.bankDetails,
@@ -98,6 +96,7 @@ const WithdrawalPage = () => {
     }
   };
 
+  const isOfficial = profile?.role === 'official' || profile?.role === 'admin' || profile?.email === 'work.aditipatwa@gmail.com';
   const currentCredits = !isOfficial ? 1400 : (profile?.totalCredits || 0);
   const currentBalanceINR = !isOfficial ? 280 : (profile ? Math.floor(currentCredits / CONVERSION_RATE) : 0);
   const canWithdraw = profile && currentCredits >= MIN_WITHDRAWAL && profile.bankDetails;
@@ -139,7 +138,7 @@ const WithdrawalPage = () => {
                 <div className="flex items-center gap-1 text-emerald-600">
                   <IndianRupee className="w-5 h-5" />
                   <span className="text-4xl font-black tracking-tight">
-                    {currentBalanceINR || 280} 
+                    {currentBalanceINR} 
                     <span className="text-sm font-bold text-slate-400 ml-2 uppercase tracking-widest">rupees</span>
                   </span>
                 </div>
@@ -201,7 +200,7 @@ const WithdrawalPage = () => {
               )}
               {!canWithdraw && profile?.bankDetails && (
                 <p className="text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-4">
-                  You need {MIN_WITHDRAWAL - currentCredits} more credits to withdraw
+                  You need {MIN_WITHDRAWAL - (profile?.totalCredits || 0)} more credits to withdraw
                 </p>
               )}
             </div>

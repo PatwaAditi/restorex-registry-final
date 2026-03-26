@@ -86,10 +86,9 @@ const SubmitRestoration = () => {
     if (!file) return;
 
     setError(null);
+    setGpsData(null);
     setImage(file);
     setPreview(URL.createObjectURL(file));
-    // Default to zeroed GPS to enable submit button immediately, update if EXIF found
-    setGpsData({ lat: 0, lng: 0 });
 
     // Extract EXIF data
     const reader = new FileReader();
@@ -115,6 +114,9 @@ const SubmitRestoration = () => {
             const latitude = convertToDecimal(lat, latRef);
             const longitude = convertToDecimal(lng, lngRef);
             setGpsData({ lat: latitude, lng: longitude });
+          } else {
+            // Bypass GPS requirement for now
+            setGpsData({ lat: 0, lng: 0 });
           }
         });
       };

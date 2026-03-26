@@ -13,6 +13,7 @@ import EXIF from 'exif-js';
 import { ref, getDownloadURL } from 'firebase/storage';
 import { collection, addDoc, doc, updateDoc, increment } from 'firebase/firestore';
 import { storage, db } from '../lib/firebase';
+import { toast } from 'sonner';
 import { useAuth } from '../context/AuthContext';
 import { RestorationType } from '../types';
 import { cn } from '../lib/utils';
@@ -173,9 +174,11 @@ const SubmitRestoration = () => {
       }
 
       setSuccess(true);
+      toast.success("Submission successful! Redirecting...");
       setTimeout(() => setCurrentView('dashboard'), 2000);
     } catch (err: any) {
       setError(err.message);
+      toast.error(`Submission failed: ${err.message}`);
     } finally {
       setLoading(false);
     }

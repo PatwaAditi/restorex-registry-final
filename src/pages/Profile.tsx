@@ -443,7 +443,7 @@ const Profile = () => {
       </div>
 
       {/* Floating Action Button */}
-      {isOwnProfile && (
+      {isOwnProfile && !(profile?.role === 'official' || profile?.role === 'admin' || profile?.email === 'work.aditipatwa@gmail.com') && (
         <button 
           onClick={handleCreatePost}
           className="fixed bottom-8 right-8 w-16 h-16 glass-button-blue rounded-full shadow-2xl flex items-center justify-center hover:scale-105 active:scale-95 z-40"

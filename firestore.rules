@@ -43,7 +43,12 @@ service cloud.firestore {
     function isValidUser(data) {
       return data.uid is string && 
              data.displayName is string && 
-             data.role in ['user', 'admin', 'guest', 'official', 'government'];
+             data.role in ['user', 'admin', 'guest', 'official', 'government'] &&
+             (!('restorationsCount' in data) || data.restorationsCount is number) &&
+             (!('totalCredits' in data) || data.totalCredits is number) &&
+             (!('payoutsRequested' in data) || data.payoutsRequested is number) &&
+             (!('photoURL' in data) || data.photoURL is string) &&
+             (!('bannerURL' in data) || data.bannerURL is string);
     }
 
     function isValidUserPrivate(data) {
